@@ -10,12 +10,18 @@ type BookingWithDetails = Booking & { service?: Service; resource?: Resource };
 export const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const loadData = () => {
     setLoading(true);
+    setError(null);
     fetchMyBookings()
       .then(setBookings)
+      .catch((err) => {
+        console.error("Failed to fetch bookings", err);
+        setError("Failed to load your bookings.");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -29,14 +35,27 @@ export const MyBookings: React.FC = () => {
     setCancellingId(id);
     try {
       await cancelBooking(id);
-      // Optimistic update or reload
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
-    } finally {
+      // Reload data to ensure state is consistent with backend
+      loadData();
+    } catch (err) {
+      console.error("Failed to cancel booking", err);
+      alert("Failed to cancel booking. Please try again.");
       setCancellingId(null);
     }
   };
 
   if (loading && bookings.length === 0) return <Spinner />;
+
+  if (error) {
+     return (
+       <div className="flex flex-col items-center justify-center py-12 text-center">
+         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+         <h2 className="text-xl font-bold text-gray-900">Oops!</h2>
+         <p className="text-gray-600 mt-2">{error}</p>
+         <Button variant="outline" className="mt-6" onClick={loadData}>Try Again</Button>
+       </div>
+     );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

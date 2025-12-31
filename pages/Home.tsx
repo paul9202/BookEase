@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock, DollarSign } from 'lucide-react';
+import { ArrowRight, Clock, DollarSign, AlertCircle } from 'lucide-react';
 import { fetchServices } from '../services/api';
 import { Service } from '../types';
 import { Button, Card, Spinner } from '../components/ui';
@@ -8,16 +8,34 @@ import { Button, Card, Spinner } from '../components/ui';
 export const Home: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchServices().then((data) => {
-      setServices(data);
-      setLoading(false);
-    });
+    fetchServices()
+      .then((data) => {
+        setServices(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load services", err);
+        setError("Unable to load services. Please check your connection.");
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <Spinner />;
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold text-gray-900">Unable to load content</h2>
+        <p className="text-gray-600 mt-2">{error}</p>
+        <Button variant="outline" className="mt-6" onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
