@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Booking, Resource, Service, ServiceType, TimeSlot } from '../types';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://paul-vmware-virtual-platform:8080/api';
 const MOCK_USER_ID = 'USER-001';
 
 const client = axios.create({
